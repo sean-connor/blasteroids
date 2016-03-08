@@ -1,6 +1,13 @@
-.board{
+html{
+  background: url('http://www.jpl.nasa.gov/assets/images/content/tmp/home/missions_bg_image.jpg');
+  background-size: cover;
+}
+div{
   position: relative;
-  top: 50%;
-  left: 50%;
-  width: 500px;
+  top: calc(50% - 400px);
+  margin: 0;
+  left: calc(50% - 500px);
+}
+h1{
+  color: white;
 }

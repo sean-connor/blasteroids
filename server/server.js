@@ -13,14 +13,16 @@ var PLAYER_DIRECTION = {
 };
 app.use(express.static(__dirname + '/../client'));
 
-//serv.listen(2000);
-serv.listen(process.env.PORT);
+serv.listen(2000);
+//serv.listen(process.env.PORT);
 console.log("Server Started.");
 
 //PLAYER LOGIC
 var Player = function(id){
   var self = {
+    type: 'ship',
     health: 100,
+    radius: 15,
     x: 250,
     y: 250,
     id: id,
@@ -78,6 +80,9 @@ var Player = function(id){
 //BULLET LOGIC
 var Bullet = function(id, bullet_dir){
   var self = {
+    type: 'bullet',
+    player: id,
+    radius: 2,
     x: PLAYER_LIST[id].x,
     y: PLAYER_LIST[id].y,
     speed: 15,
@@ -90,6 +95,38 @@ var Bullet = function(id, bullet_dir){
   return self;
 }
 
+//Collision LOGIC
+var checkCollisions = function(){
+//Player Collisions
+  for(var i in PLAYER_LIST){
+    var player1 = PLAYER_LIST[i];
+    for(var j in PLAYER_LIST){
+      var player2 = PLAYER_LIST[j];
+      if (player1 == player2) { continue; };
+      var a = Math.abs(player1.y - player2.y);
+      var b = Math.abs(player1.x - player2.x);
+      if(Math.sqrt((a * a) + (b * b)) <= (player1.radius + player2.radius)){
+        player1.health = 0;
+        player2.health = 0;
+      }
+    }
+  }
+//Bullet to Player Collisions
+  for(var i in PLAYER_LIST){
+    var player = PLAYER_LIST[i];
+    for(var j in BULLET_LIST){
+      var bullet = BULLET_LIST[j];
+      if (bullet.player == player.id) { continue; };
+      var a = Math.abs(player.y - bullet.y);
+      var b = Math.abs(player.x - bullet.x);
+      if(Math.sqrt((a * a) + (b * b)) <= (player.radius + bullet.radius)){
+        player.health -= 1;
+        delete bullet;
+      }
+    }
+  }
+
+}
 // SOCKET
 io.sockets.on('connection', function(socket){
   console.log("Client Connected");
@@ -117,25 +154,18 @@ io.sockets.on('connection', function(socket){
   });
   socket.on('fire', function(data){
     var bulletDirection = [0,0]
-    if (PLAYER_LIST[socket.id].pressingRight){
-      bulletDirection[0] += PLAYER_DIRECTION['pressingRight'][0];
-      bulletDirection[1] += PLAYER_DIRECTION['pressingRight'][1];
-    }
-    if (PLAYER_LIST[socket.id].pressingLeft){
-      bulletDirection[0] += PLAYER_DIRECTION['pressingLeft'][0];
-      bulletDirection[1] += PLAYER_DIRECTION['pressingLeft'][1];
-    }
-    if (PLAYER_LIST[socket.id].pressingUp){
-      bulletDirection[0] += PLAYER_DIRECTION['pressingUp'][0];
-      bulletDirection[1] += PLAYER_DIRECTION['pressingUp'][1];
-    }
-    if (PLAYER_LIST[socket.id].pressingDown){
-      bulletDirection[0] += PLAYER_DIRECTION['pressingDown'][0];
-      bulletDirection[1] += PLAYER_DIRECTION['pressingDown'][1];
-    }
-    console.log(bulletDirection);
-    if (bulletDirection[0] !== 0 || bulletDirection[1] !== 0){
+    var p_vel = PLAYER_LIST[socket.id].velocity;
+
+    if (p_vel[0] !== 0 || p_vel[1] !== 0){
       id = Math.random();
+      if(p_vel[0] !== 0){
+        bulletDirection[0] = p_vel[0];
+        //(p_vel[0] > 0) ? bulletDirection[0] = 1 : bulletDirection[0] = -1;
+      }
+      if(p_vel[1] !== 0){
+        bulletDirection[1] = p_vel[1];
+        //(p_vel[1] > 0) ? bulletDirection[1] = 1 : bulletDirection[1] = -1;
+      }
       var bullet = Bullet(socket.id, bulletDirection);
       BULLET_LIST[id] = bullet;
     }
@@ -146,6 +176,7 @@ io.sockets.on('connection', function(socket){
 
 //RENDER INTERVAL
 setInterval(function(){
+  checkCollisions();
   var playerpack = [];
   for(var i in PLAYER_LIST){
     var player = PLAYER_LIST[i];
