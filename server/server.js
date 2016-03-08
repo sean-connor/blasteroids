@@ -13,8 +13,8 @@ var PLAYER_DIRECTION = {
 };
 app.use(express.static(__dirname + '/../client'));
 
-serv.listen(2000);
-//serv.listen(process.env.PORT);
+//serv.listen(2000);
+serv.listen(process.env.PORT);
 console.log("Server Started.");
 
 //PLAYER LOGIC
