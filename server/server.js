@@ -13,7 +13,7 @@ var PLAYER_DIRECTION = {
 };
 app.use(express.static(__dirname + '/../client'));
 
-//serv.listen(2000);
+serv.listen(2000);
 serv.listen(process.env.PORT);
 console.log("Server Started.");
 
@@ -22,56 +22,48 @@ var Player = function(id){
   var self = {
     type: 'ship',
     health: 100,
+    thrust: 0.1,
+    turnSpeed: 0.005,
+    angle: 0,
     radius: 15,
-    x: 250,
-    y: 250,
+    pointLength: 20,
+    px: 0,
+    py: 0,
+    x: (Math.round(Math.random()*1000)+1),
+    y: (Math.round(Math.random()*600)+1),
     id: id,
     number: "" + Math.floor(10 * Math.random()),
-    pressingRight: false,
-    pressingLeft: false,
-    pressingUp: false,
-    pressingDown: false,
+    thrusting: false,
+    rotateL: false,
+    rotateR: false,
     curSpeed: 0,
     maxSpeed: 3,
     velocity: [0,0]
   }
+  self.turn = function(dir){
+    self.angle += this.turnSpeed * dir;
+  }
   self.updatePosition = function() {
-    if(self.pressingRight){
-      if (self.x > 1000){
-        self.x = 1;
-      } else {
-        if(self.velocity[0] < self.maxSpeed){
-          self.velocity[0] = self.velocity[0] + 1;
-        }
-      }
+    var radians = this.angle/Math.PI*180;
+    if(self.thrusting){
+      self.velocity[0] += Math.cos(radians) * this.thrust;
+      self.velocity[1] += Math.sin(radians) * this.thrust;
     }
-    if(self.pressingLeft){
-      if (self.x <= 0){
+    if(self.x < self.radius){
         self.x = 1000;
-      } else {
-        if(-(self.velocity[0]) < self.maxSpeed){
-          self.velocity[0] = self.velocity[0] - 1;
-        }
-      }
     }
-    if(self.pressingUp){
-      if (self.y <= 0){
+    if(self.x > 1000){
+        self.x = self.radius;
+    }
+    if(self.y < self.radius){
         self.y = 600;
-      } else {
-        if(-(self.velocity[1]) < self.maxSpeed){
-          self.velocity[1] = self.velocity[1] - 1;
-        }
-      }
     }
-    if(self.pressingDown){
-      if (self.y > 600){
-        self.y = 1;
-      } else {
-        if(self.velocity[1] < self.maxSpeed){
-          self.velocity[1] = self.velocity[1] + 1;
-        }
-      }
+    if(self.y > 600){
+        self.y = self.radius;
     }
+    self.px = self.x + self.pointLength * Math.cos(radians);
+    self.py = self.y + self.pointLength * Math.sin(radians);
+
   }
   return self;
 }
@@ -85,8 +77,10 @@ var Bullet = function(id, bullet_dir){
     radius: 2,
     x: PLAYER_LIST[id].x,
     y: PLAYER_LIST[id].y,
-    speed: 15,
-    dir: bullet_dir
+    px: PLAYER_LIST[id].px,
+    py: PLAYER_LIST[id].py,
+    speed: 5,
+    dir: [(PLAYER_LIST[id].px - PLAYER_LIST[id].x), (PLAYER_LIST[id].py - PLAYER_LIST[id].y)]
   }
   self.updatePosition = function(){
     self.x += self.dir[0]*self.speed;
@@ -97,7 +91,6 @@ var Bullet = function(id, bullet_dir){
 
 //Collision LOGIC
 var checkCollisions = function(){
-//Player Collisions
   for(var i in PLAYER_LIST){
     var player1 = PLAYER_LIST[i];
     for(var j in PLAYER_LIST){
@@ -111,7 +104,7 @@ var checkCollisions = function(){
       }
     }
   }
-//Bullet to Player Collisions
+
   for(var i in PLAYER_LIST){
     var player = PLAYER_LIST[i];
     for(var j in BULLET_LIST){
@@ -142,14 +135,12 @@ io.sockets.on('connection', function(socket){
   })
 
   socket.on('move', function(data){
-    if(data.direction === 'up'){
-      player.pressingUp = data.state;
-    } else if(data.direction === 'down'){
-      player.pressingDown = data.state;
-    } else if(data.direction === 'left'){
-      player.pressingLeft = data.state;
-    } else if(data.direction === 'right'){
-      player.pressingRight = data.state;
+    if(data.direction === 'thrust'){
+      player.thrusting = data.state;
+    } else if(data.direction === 'rotate-l'){
+      player.turn(-1);
+    } else if(data.direction === 'rotate-r'){
+      player.turn(1);
     }
   });
   socket.on('fire', function(data){
@@ -184,6 +175,9 @@ setInterval(function(){
       playerpack.push({
         x: player.x += player.velocity[0],
         y: player.y += player.velocity[1],
+        px: player.px,
+        py: player.py,
+        radius: player.radius,
         number: player.number,
         health: player.health,
         id: i

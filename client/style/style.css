@@ -1,6 +1,10 @@
 html{
-  background: url('http://www.jpl.nasa.gov/assets/images/content/tmp/home/missions_bg_image.jpg');
-  background-size: cover;
+  background: url('http://www.jpl.nasa.gov/assets/images/content/tmp/home/missions_bg_image.jpg') no-repeat center center fixed;
+-webkit-background-size: cover;
+-moz-background-size: cover;
+-o-background-size: cover;
+background-size: cover;
+overflow: hidden;
 }
 div{
   position: relative;

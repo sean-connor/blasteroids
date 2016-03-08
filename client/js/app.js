@@ -1,13 +1,11 @@
 var socket = io();
 var KEY_COMMANDS = {
-  38: "up",
-  87: "up",
-  37: "left",
-  65: "left",
-  40: "down",
-  83: "down",
-  39: "right",
-  68: "right"
+  38: "thrust",
+  87: "thrust",
+  37: "rotate-l",
+  65: "rotate-l",
+  39: "rotate-r",
+  68: "rotate-r"
 }
 var socketId;
 var ctx = document.getElementById("ctx").getContext("2d");
@@ -46,6 +44,12 @@ socket.on('newPosition', function(data){
 
     }
     ctx.fillText(data[i].health, healthX, healthY);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(data[i].x, data[i].y);
+    ctx.lineTo(data[i].px, data[i].py);
+    ctx.closePath();
     ctx.stroke();
   }
 });
