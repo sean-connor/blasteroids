@@ -9,7 +9,9 @@ var KEY_COMMANDS = {
 }
 var socketId;
 var ctx = document.getElementById("ctx").getContext("2d");
-
+window.addEventListener("keyup", keyup);
+window.addEventListener("keydown", keydown);
+window.addEventListener("keypress", keypress);
 
 ctx.font = '30px Arial';
 
@@ -23,16 +25,8 @@ socket.on('newPosition', function(data){
   ctx.clearRect(0,0, 800,600);
   ctx.fillStyle = "black";
   ctx.fillRect(0,0,800,600);
+  //Ships and Turrets
   for(var i = 0; i < data.length; i++){
-    // x = data[i].x;
-    // y = data[i].y;
-    // ctx.beginPath();
-    // ctx.moveTo(x, y);
-    // ctx.lineTo(x + 25, y + 25);
-    // ctx.lineTo(x + 25, y + (-25));
-    // ctx.scale(1,1);
-    // ctx.rotate(Math.PI / 1);
-    // ctx.fill();
     healthX = data[i].x - 30;
     healthY = data[i].y + 40;
     ctx.beginPath()
@@ -41,11 +35,15 @@ socket.on('newPosition', function(data){
     ctx.strokeStyle = "#f8f8ff";
     if(data[i].id == socketId){
       ctx.strokeStyle = 'red';
-
+      if (data[i].health <= 0) {
+        socket.emit("lossReceipt");
+        gameLoss();
+        {break;}
+      }
     }
     ctx.fillText(data[i].health, healthX, healthY);
     ctx.stroke();
-
+    //Turrets
     ctx.beginPath();
     ctx.moveTo(data[i].x, data[i].y);
     ctx.lineTo(data[i].px, data[i].py);
@@ -60,18 +58,27 @@ socket.on('bullets', function(data){
     ctx.fill();
   }
 });
-
-document.onkeypress = function(e){
+var gameLoss = function(){
+  console.log("GAME LOSS");
+  ctx.clearRect(0,0, 800,600);
+  ctx.fillStyle = "black";
+  ctx.fillRect(0,0,800,600);
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "white";
+  ctx.fillText("Game Over", 400, 300);
+  console.log("Post Render Game Loss");
+}
+function keypress(e){
   e = e || window.event;
   if(e.keyCode === 32){
     socket.emit("fire", {})
   }
 }
-document.onkeydown = function(e){
+function keydown(e){
   e = e || window.event;
   socket.emit("move", {direction: KEY_COMMANDS[e.keyCode], state: true});
 }
-document.onkeyup = function(e){
+function keyup(e){
   e = e || window.event;
   socket.emit("move", {direction: KEY_COMMANDS[e.keyCode], state: false});
 }

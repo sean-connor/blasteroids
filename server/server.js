@@ -21,9 +21,9 @@ console.log("Server Started.");
 var Player = function(id){
   var self = {
     type: 'ship',
-    health: 100,
-    thrust: 0.1,
-    turnSpeed: 0.004,
+    health: 50,
+    thrust: 0.4,
+    turnSpeed: 0.001,
     angle: 0,
     radius: 15,
     pointLength: 20,
@@ -34,19 +34,19 @@ var Player = function(id){
     id: id,
     number: "" + Math.floor(10 * Math.random()),
     thrusting: false,
-    rotateL: false,
-    rotateR: false,
-    curSpeed: 0,
-    maxSpeed: 1,
+    firing: false,
+    rotating: false,
+    rotateDir: 0,
     velocity: [0,0]
   }
-  self.turn = function(dir){
-    self.angle += this.turnSpeed * dir;
-  }
+
   self.updatePosition = function() {
     var radians = this.angle/Math.PI*180;
+    if(self.turning){
+      self.angle += self.turnSpeed * self.rotateDir;
+    }
     if(self.thrusting){
-      if((Math.abs(self.velocity[0]) < 0.5) && (Math.abs(self.velocity[1]) < 0.5)){
+      if((Math.abs(self.velocity[0]) < 4) && (Math.abs(self.velocity[1]) < 4)){
         self.velocity[0] += Math.cos(radians) * this.thrust;
         self.velocity[1] += Math.sin(radians) * this.thrust;
       }
@@ -128,14 +128,19 @@ io.sockets.on('connection', function(socket){
     delete SOCKET_LIST[socket.id];
     delete PLAYER_LIST[socket.id];
   })
-
+  socket.on('lossReceipt', function(){
+    delete SOCKET_LIST[socket.id];
+    delete PLAYER_LIST[socket.id];
+  })
   socket.on('move', function(data){
     if(data.direction === 'thrust'){
       player.thrusting = data.state;
     } else if(data.direction === 'rotate-l'){
-      player.turn(-1);
+      player.rotateDir = -1;
+      player.turning = data.state;
     } else if(data.direction === 'rotate-r'){
-      player.turn(1);
+      player.rotateDir = 1;
+      player.turning = data.state;
     }
   });
   socket.on('fire', function(data){
@@ -196,4 +201,4 @@ setInterval(function(){
     socket.emit('newPosition', playerpack);
     socket.emit('bullets', bulletpack);
   }
-}, 1000/360);
+}, 1000/60);
