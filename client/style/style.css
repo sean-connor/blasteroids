@@ -24,6 +24,15 @@ h1{
   width: 450px;
   color: white;
 }
+h2{
+  position: absolute;
+  left: calc(50% - 400px);
+  color: white;
+  margin: 0 auto;
+  font-size: 35px;
+  width: 800px;
+  color: white;
+}
 .description{
   color: white;
   position: absolute;
