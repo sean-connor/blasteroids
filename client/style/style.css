@@ -13,13 +13,12 @@ body{
 }
 .board{
   position: relative;
-  top: calc(50% - 350px);
+  top: calc(50% - 375px);
   margin: 0;
-  left: calc(50% - 275px);
+  left: calc(50% - 205px);
 }
 h1{
   color: white;
-  margin: 0 auto;
   font-size: 70px;
   width: 450px;
   color: white;

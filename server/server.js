@@ -66,8 +66,8 @@ var Player = function(id){
     self.px = self.x + self.pointLength * Math.cos(radians);
     self.py = self.y + self.pointLength * Math.sin(radians);
 
-    self.velocity[0] *= 0.999;
-    self.velocity[1] *= 0.999;
+    self.velocity[0] *= 0.99;
+    self.velocity[1] *= 0.99;
 
 }
   return self;
