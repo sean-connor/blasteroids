@@ -3,18 +3,24 @@
   <head>
     <title>Blasteroids</title>
     <link rel="stylesheet" type="text/css" href="style/style.css" />
+    <link href='https://fonts.googleapis.com/css?family=Orbitron:400,500,700,900' rel='stylesheet' type='text/css'>
   </head>
 
   <body>
   <h1>Blasteroids</h1>
-  <p>
-    
-  </p>
-  <div className="board">
+  <div class="description">
+      <p>Use the "w" or &uarr; key to activate thrusters.</p>
+      <p>"a" / &larr; to rotate left AND "d" / &rarr; to rotate right.</p>
+      <p>Oh... right and your blasters, just press space.</p>
+  </div>
+  <div class="board">
     <canvas id="ctx" height=600 width=1000 fillStyle="#070e13" style="border:1px solid #000000"></canvas>
+  </div>
+  <div class="footer">
+      <span>Created by&nbsp;</span>
+      <a class="gitlink" href="http://www.github.com/sean-connor/" target="_blank">Sean Connor</a>
   </div>
   <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
   <script src="./js/app.js"></script>
-
   </body>
 </html>

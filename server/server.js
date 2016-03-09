@@ -23,7 +23,7 @@ var Player = function(id){
     type: 'ship',
     health: 100,
     thrust: 0.1,
-    turnSpeed: 0.005,
+    turnSpeed: 0.004,
     angle: 0,
     radius: 15,
     pointLength: 20,
@@ -37,7 +37,7 @@ var Player = function(id){
     rotateL: false,
     rotateR: false,
     curSpeed: 0,
-    maxSpeed: 3,
+    maxSpeed: 1,
     velocity: [0,0]
   }
   self.turn = function(dir){
@@ -46,8 +46,10 @@ var Player = function(id){
   self.updatePosition = function() {
     var radians = this.angle/Math.PI*180;
     if(self.thrusting){
-      self.velocity[0] += Math.cos(radians) * this.thrust;
-      self.velocity[1] += Math.sin(radians) * this.thrust;
+      if((Math.abs(self.velocity[0]) < 0.5) && (Math.abs(self.velocity[1]) < 0.5)){
+        self.velocity[0] += Math.cos(radians) * this.thrust;
+        self.velocity[1] += Math.sin(radians) * this.thrust;
+      }
     }
     if(self.x < self.radius){
         self.x = 1000;
@@ -64,7 +66,10 @@ var Player = function(id){
     self.px = self.x + self.pointLength * Math.cos(radians);
     self.py = self.y + self.pointLength * Math.sin(radians);
 
-  }
+    self.velocity[0] *= 0.999;
+    self.velocity[1] *= 0.999;
+
+}
   return self;
 }
 
@@ -75,35 +80,23 @@ var Bullet = function(id, bullet_dir){
     type: 'bullet',
     player: id,
     radius: 2,
+    hit: false,
     x: PLAYER_LIST[id].x,
     y: PLAYER_LIST[id].y,
     px: PLAYER_LIST[id].px,
     py: PLAYER_LIST[id].py,
-    speed: 5,
+    speed: 15,
     dir: [(PLAYER_LIST[id].px - PLAYER_LIST[id].x), (PLAYER_LIST[id].py - PLAYER_LIST[id].y)]
   }
   self.updatePosition = function(){
-    self.x += self.dir[0]*self.speed;
-    self.y += self.dir[1]*self.speed;
+    self.x += (self.dir[0]*self.speed)/10;
+    self.y += (self.dir[1]*self.speed)/10;
   }
   return self;
 }
 
 //Collision LOGIC
 var checkCollisions = function(){
-  for(var i in PLAYER_LIST){
-    var player1 = PLAYER_LIST[i];
-    for(var j in PLAYER_LIST){
-      var player2 = PLAYER_LIST[j];
-      if (player1 == player2) { continue; };
-      var a = Math.abs(player1.y - player2.y);
-      var b = Math.abs(player1.x - player2.x);
-      if(Math.sqrt((a * a) + (b * b)) <= (player1.radius + player2.radius)){
-        player1.health = 0;
-        player2.health = 0;
-      }
-    }
-  }
 
   for(var i in PLAYER_LIST){
     var player = PLAYER_LIST[i];
@@ -113,8 +106,10 @@ var checkCollisions = function(){
       var a = Math.abs(player.y - bullet.y);
       var b = Math.abs(player.x - bullet.x);
       if(Math.sqrt((a * a) + (b * b)) <= (player.radius + bullet.radius)){
-        player.health -= 1;
-        delete bullet;
+        if (player.health > 0) {
+          player.health -= 1;
+          bullet.hit = true;
+        }
       }
     }
   }
@@ -187,7 +182,7 @@ setInterval(function(){
   for(var i in BULLET_LIST){
     var bullet = BULLET_LIST[i];
       bullet.updatePosition();
-      if ((bullet.x < 1000 && bullet.x > 0) && (bullet.y < 600 && bullet.y > 0)){
+      if ((bullet.hit === false && bullet.x < 1000 && bullet.x > 0) && (bullet.y < 600 && bullet.y > 0)){
         bulletpack.push({
           x: bullet.x,
           y: bullet.y,
@@ -201,4 +196,4 @@ setInterval(function(){
     socket.emit('newPosition', playerpack);
     socket.emit('bullets', bulletpack);
   }
-}, 1000/32);
+}, 1000/360);
