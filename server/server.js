@@ -21,7 +21,7 @@ console.log("Server Started.");
 var Player = function(id){
   var self = {
     type: 'ship',
-    health: 50,
+    health: 20,
     thrust: 0.4,
     turnSpeed: 0.001,
     angle: 0,
