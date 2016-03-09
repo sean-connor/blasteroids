@@ -13,6 +13,12 @@
       <p>"a" / &larr; to rotate left AND "d" / &rarr; to rotate right.</p>
       <p>Oh... right and your blasters, just press space.</p>
   </div>
+  <div class="namegroup">
+    <label class="namelabel"> Name:
+      <input class="namelabel" id="nameInput" type="text" name="name" value="" maxlength="3"/>
+      <button id="nameSubmit" type="button" name="button">Join!</button>
+    </label>
+  </div>
   <div class="board">
     <canvas id="ctx" height=600 width=800 fillStyle="#070e13" style="border:1px solid #000000"></canvas>
   </div>
@@ -20,6 +26,9 @@
       <span>Created by&nbsp;</span>
       <a class="gitlink" href="http://www.github.com/sean-connor/" target="_blank">Sean Connor</a>
   </div>
+  <script type="text/javascript">
+    document.write("\<script src='//ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js' type='text/javascript'>\<\/script>");
+  </script>
   <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
   <script src="./js/app.js"></script>
   </body>

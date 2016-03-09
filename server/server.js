@@ -18,8 +18,10 @@ serv.listen(process.env.PORT);
 console.log("Server Started.");
 
 //PLAYER LOGIC
-var Player = function(id){
+var Player = function(id, name){
   var self = {
+    name: name,
+    points: 0,
     type: 'ship',
     health: 20,
     thrust: 0.4,
@@ -109,6 +111,10 @@ var checkCollisions = function(){
         if (player.health > 0) {
           player.health -= 1;
           bullet.hit = true;
+          PLAYER_LIST[bullet.player].points++;
+          if(player.health == 0){
+            PLAYER_LIST[bullet.player].points += 10;
+          }
         }
       }
     }
@@ -121,9 +127,12 @@ io.sockets.on('connection', function(socket){
   socket.id = Math.random();
   socket.emit('token', socket.id);
   SOCKET_LIST[socket.id] = socket;
-  var player = Player(socket.id);
-  PLAYER_LIST[socket.id] = player;
 
+  socket.on('playerjoin', function(data){
+    console.log("Player Join");
+    var player = Player(data.id, data.name);
+    PLAYER_LIST[socket.id] = player;
+  })
   socket.on('disconnect', function(){
     delete SOCKET_LIST[socket.id];
     delete PLAYER_LIST[socket.id];
@@ -133,6 +142,7 @@ io.sockets.on('connection', function(socket){
     delete PLAYER_LIST[socket.id];
   })
   socket.on('move', function(data){
+    player = PLAYER_LIST[socket.id];
     if(data.direction === 'thrust'){
       player.thrusting = data.state;
     } else if(data.direction === 'rotate-l'){
@@ -173,6 +183,7 @@ setInterval(function(){
     var player = PLAYER_LIST[i];
     player.updatePosition();
       playerpack.push({
+        name: player.name,
         x: player.x += player.velocity[0],
         y: player.y += player.velocity[1],
         px: player.px,
@@ -180,6 +191,7 @@ setInterval(function(){
         radius: player.radius,
         number: player.number,
         health: player.health,
+        points: player.points,
         id: i
       });
   }

@@ -12,10 +12,11 @@ body{
   width: 100%;
 }
 .board{
-  position: relative;
-  top: calc(50% - 375px);
+  position: fixed;
+  top: 5%;
+  right: 0;
   margin: 0;
-  left: calc(50% - 205px);
+  left: calc(65% - 400px);
 }
 h1{
   color: white;
@@ -31,6 +32,16 @@ h2{
   font-size: 35px;
   width: 800px;
   color: white;
+}
+.namegroup{
+  color: white;
+  position: absolute;
+  left: 0%;
+  top: 35%;
+  margin: 10px;
+  background: rgba(54, 87, 122, 0.5);
+  padding: 10px;
+  border-radius: 5px;
 }
 .description{
   color: white;

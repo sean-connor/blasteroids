@@ -9,17 +9,37 @@ var KEY_COMMANDS = {
 }
 var socketId;
 var ctx = document.getElementById("ctx").getContext("2d");
-window.addEventListener("keyup", keyup);
-window.addEventListener("keydown", keydown);
-window.addEventListener("keypress", keypress);
+var active = false;
 
 ctx.font = '30px Arial';
 
 
 socket.on('token', function(data){
   socketId = data;
-  console.log(socketId);
+  ctx.clearRect(0,0, 800,600);
+  ctx.fillStyle = "black";
+  ctx.fillRect(0,0,800,600);
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "white";
+  ctx.fillText("Enter Name to Join!", 400, 300);
 });
+
+$(document).ready(function() {
+
+    $("#nameSubmit").click(function(e){
+      if(active === false){
+        var name = $('#nameInput').val().toLowerCase();
+        name = name.substring(0,3);
+        name = name + ":";
+        socket.emit("playerjoin", {id: socketId, name: name})
+        window.addEventListener("keyup", keyup);
+        window.addEventListener("keydown", keydown);
+        window.addEventListener("keypress", keypress);
+        active = true;
+      }
+    });
+});
+
 
 socket.on('newPosition', function(data){
   ctx.clearRect(0,0, 800,600);
@@ -27,8 +47,9 @@ socket.on('newPosition', function(data){
   ctx.fillRect(0,0,800,600);
   //Ships and Turrets
   for(var i = 0; i < data.length; i++){
-    healthX = data[i].x - 30;
-    healthY = data[i].y + 40;
+    nameX = data[i].x - 30;
+    textY = data[i].y + 40;
+    healthX = data[i].x + 10;
     ctx.beginPath()
     ctx.arc(data[i].x, data[i].y, 15, 0, 2 * Math.PI, false);
     ctx.fillStyle = "#f8f8ff";
@@ -37,11 +58,14 @@ socket.on('newPosition', function(data){
       ctx.strokeStyle = 'red';
       if (data[i].health <= 0) {
         socket.emit("lossReceipt");
-        gameLoss();
+        gameLoss(data[i].points);
         {break;}
       }
     }
-    ctx.fillText(data[i].health, healthX, healthY);
+    ctx.font = "20px Georgia";
+    ctx.fillText(data[i].name, nameX, textY);
+    ctx.font = "20px Georgia";
+    ctx.fillText(data[i].health, healthX, textY);
     ctx.stroke();
     //Turrets
     ctx.beginPath();
@@ -58,15 +82,16 @@ socket.on('bullets', function(data){
     ctx.fill();
   }
 });
-var gameLoss = function(){
-  console.log("GAME LOSS");
+var gameLoss = function(points){
   ctx.clearRect(0,0, 800,600);
   ctx.fillStyle = "black";
   ctx.fillRect(0,0,800,600);
   ctx.fillStyle = "white";
   ctx.strokeStyle = "white";
-  ctx.fillText("Game Over", 400, 300);
-  console.log("Post Render Game Loss");
+  ctx.fillText("Game Over!", 300, 200);
+  ctx.fillText("Points:", 300, 250);
+  ctx.fillText(points, 370, 250);
+  active = false;
 }
 function keypress(e){
   e = e || window.event;
