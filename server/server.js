@@ -29,7 +29,7 @@ var Player = function(id){
     pointLength: 20,
     px: 0,
     py: 0,
-    x: (Math.round(Math.random()*1000)+1),
+    x: (Math.round(Math.random()*800)+1),
     y: (Math.round(Math.random()*600)+1),
     id: id,
     number: "" + Math.floor(10 * Math.random()),
@@ -52,9 +52,9 @@ var Player = function(id){
       }
     }
     if(self.x < self.radius){
-        self.x = 1000;
+        self.x = 800;
     }
-    if(self.x > 1000){
+    if(self.x > 800){
         self.x = self.radius;
     }
     if(self.y < self.radius){
@@ -182,7 +182,7 @@ setInterval(function(){
   for(var i in BULLET_LIST){
     var bullet = BULLET_LIST[i];
       bullet.updatePosition();
-      if ((bullet.hit === false && bullet.x < 1000 && bullet.x > 0) && (bullet.y < 600 && bullet.y > 0)){
+      if ((bullet.hit === false && bullet.x < 800 && bullet.x > 0) && (bullet.y < 600 && bullet.y > 0)){
         bulletpack.push({
           x: bullet.x,
           y: bullet.y,

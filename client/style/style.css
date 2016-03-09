@@ -11,11 +11,11 @@ body{
   height: 100%;
   width: 100%;
 }
-div{
+.board{
   position: relative;
-  top: calc(50% - 400px);
+  top: calc(50% - 350px);
   margin: 0;
-  left: calc(50% - 500px);
+  left: calc(50% - 275px);
 }
 h1{
   color: white;

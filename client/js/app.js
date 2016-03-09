@@ -20,9 +20,9 @@ socket.on('token', function(data){
 });
 
 socket.on('newPosition', function(data){
-  ctx.clearRect(0,0, 1000,600);
+  ctx.clearRect(0,0, 800,600);
   ctx.fillStyle = "black";
-  ctx.fillRect(0,0,1000,600);
+  ctx.fillRect(0,0,800,600);
   for(var i = 0; i < data.length; i++){
     // x = data[i].x;
     // y = data[i].y;
