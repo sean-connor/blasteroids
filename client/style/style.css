@@ -16,7 +16,9 @@ body{
   top: 5%;
   right: 0;
   margin: 0;
-  left: calc(65% - 400px);
+  left: calc(69% - 400px);
+  border: 4px solid rgba(54, 250, 122, 0.5);
+  width: 801px;
 }
 h1{
   color: white;

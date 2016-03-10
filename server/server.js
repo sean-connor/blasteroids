@@ -5,6 +5,7 @@ var io = require('socket.io')(serv, {});
 var SOCKET_LIST = {};
 var PLAYER_LIST = {};
 var BULLET_LIST = {};
+var HIGH_SCORES = [['---',0],['---',0],['---',0]];
 var PLAYER_DIRECTION = {
   'pressingRight': [1,0],
   'pressingLeft': [-1,0],
@@ -104,6 +105,7 @@ var checkCollisions = function(){
     var player = PLAYER_LIST[i];
     for(var j in BULLET_LIST){
       var bullet = BULLET_LIST[j];
+      var bulletPlayer = PLAYER_LIST[bullet.player];
       if (bullet.player == player.id) { continue; };
       var a = Math.abs(player.y - bullet.y);
       var b = Math.abs(player.x - bullet.x);
@@ -111,10 +113,36 @@ var checkCollisions = function(){
         if (player.health > 0) {
           player.health -= 1;
           bullet.hit = true;
-          PLAYER_LIST[bullet.player].points++;
+          bulletPlayer.points++;
           if(player.health == 0){
-            PLAYER_LIST[bullet.player].points += 10;
+            bulletPlayer.points += 10;
           }
+        }
+        if(HIGH_SCORES[0][1] < bulletPlayer.points){
+          if(HIGH_SCORES[0][0] == bulletPlayer.name){
+            HIGH_SCORES[0][0] = bulletPlayer.name;
+            HIGH_SCORES[0][1] = bulletPlayer.points;
+          } else {
+          HIGH_SCORES[2][0] = HIGH_SCORES[1][0];
+          HIGH_SCORES[2][1] = HIGH_SCORES[1][1];
+          HIGH_SCORES[1][0] = HIGH_SCORES[0][0];
+          HIGH_SCORES[1][1] = HIGH_SCORES[0][1];
+          HIGH_SCORES[0][0] = bulletPlayer.name;
+          HIGH_SCORES[0][1] = bulletPlayer.points;
+          }
+        } else if((HIGH_SCORES[1][1] < bulletPlayer.points) && !(HIGH_SCORES[0][0] == bulletPlayer.name)){
+          if(HIGH_SCORES[1][0] == bulletPlayer.name){
+            HIGH_SCORES[1][0] = bulletPlayer.name;
+            HIGH_SCORES[1][1] = bulletPlayer.points;
+          } else {
+          HIGH_SCORES[2][0] = HIGH_SCORES[1][0];
+          HIGH_SCORES[2][1] = HIGH_SCORES[1][1];
+          HIGH_SCORES[1][0] = bulletPlayer.name;
+          HIGH_SCORES[1][1] = bulletPlayer.points;
+          }
+        } else if((HIGH_SCORES[2][1] < bulletPlayer.points) && ((HIGH_SCORES[1][0] !== bulletPlayer.name) && (HIGH_SCORES[0][0] !== bulletPlayer.name))){
+          HIGH_SCORES[2][0] = bulletPlayer.name;
+          HIGH_SCORES[2][1] = bulletPlayer.points;
         }
       }
     }
@@ -212,5 +240,6 @@ setInterval(function(){
     var socket = SOCKET_LIST[i]
     socket.emit('newPosition', playerpack);
     socket.emit('bullets', bulletpack);
+    socket.emit('scores', HIGH_SCORES);
   }
 }, 1000/60);
