@@ -8,23 +8,33 @@
 
   <body>
   <h1>Blasteroids</h1>
-  <div class="description">
-      <p>Use the "w" or &uarr; key to activate thrusters.</p>
-      <p>"a" / &larr; to rotate left AND "d" / &rarr; to rotate right.</p>
-      <p>Oh... right and your blasters, just press space.</p>
-  </div>
-  <div class="namegroup">
-    <label class="namelabel"> Name:
-      <input class="namelabel" id="nameInput" type="text" name="name" value="" maxlength="3"/>
-      <button id="nameSubmit" type="button" name="button">Join!</button>
-    </label>
+  <div class="sidebar">
+    <div class="description">
+        <p>Use the "w" or &uarr; key to activate thrusters.</p>
+        <p>"a" / &larr; to rotate left AND "d" / &rarr; to rotate right.</p>
+        <p>Oh... right and your blasters, just press space.</p>
+    </div>
+    <div class="namegroup">
+      <div class="namein">
+        <label class="namelabel"> Name:
+          <input class="namelabel" id="nameInput" type="text" name="name" value="" maxlength="3"/>
+          <button id="nameSubmit" type="button" name="button">Join!</button>
+        </label>
+      </div>
+    </div>
+    <div class="leader">
+      <ul id="topScores">
+        <p>Current Leaders</p>
+        <li id="first"></li>
+        <li id="second"></li>
+        <li id="third"></li>
+      </ul>
+    </div>
   </div>
   <div class="board">
-    <canvas id="ctx" height=600 width=800 fillStyle="#070e13" style="border:1px solid #000000"></canvas>
+    <canvas id="ctx" height=500 width=800 fillStyle="#070e13" style="border:1px solid #000000"></canvas>
   </div>
-  <div class="leader">
-    <canvas id="ctxLead" height=400 width=100 fillStyle="#070e13" style="border:1px solid #000000"></canvas>
-  </div>
+
   <div class="footer">
       <span>Created by&nbsp;</span>
       <a class="gitlink" href="http://www.github.com/sean-connor/" target="_blank">Sean Connor</a>

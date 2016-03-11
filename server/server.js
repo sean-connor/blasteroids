@@ -28,8 +28,8 @@ var Player = function(id, name){
     thrust: 0.4,
     turnSpeed: 0.001,
     angle: 0,
-    radius: 15,
-    pointLength: 20,
+    radius: 10,
+    pointLength: 15,
     px: 0,
     py: 0,
     x: (Math.round(Math.random()*800)+1),
@@ -38,6 +38,7 @@ var Player = function(id, name){
     number: "" + Math.floor(10 * Math.random()),
     thrusting: false,
     firing: false,
+    fired: false,
     rotating: false,
     rotateDir: 0,
     velocity: [0,0]
@@ -71,6 +72,27 @@ var Player = function(id, name){
 
     self.velocity[0] *= 0.99;
     self.velocity[1] *= 0.99;
+
+    //FIRING LOGIC
+    if(self.firing && !(self.fired)){
+      var bulletDirection = [0,0]
+      var p_vel = self.velocity;
+
+      if (p_vel[0] !== 0 || p_vel[1] !== 0){
+        id = Math.random();
+        if(p_vel[0] !== 0){
+          bulletDirection[0] = p_vel[0];
+          //(p_vel[0] > 0) ? bulletDirection[0] = 1 : bulletDirection[0] = -1;
+        }
+        if(p_vel[1] !== 0){
+          bulletDirection[1] = p_vel[1];
+          //(p_vel[1] > 0) ? bulletDirection[1] = 1 : bulletDirection[1] = -1;
+        }
+        var bullet = Bullet(self.id, bulletDirection);
+        BULLET_LIST[id] = bullet;
+      }
+      self.fired = true;
+    }
 
 }
   return self;
@@ -112,37 +134,41 @@ var checkCollisions = function(){
       if(Math.sqrt((a * a) + (b * b)) <= (player.radius + bullet.radius)){
         if (player.health > 0) {
           player.health -= 1;
-          bullet.hit = true;
-          bulletPlayer.points++;
-          if(player.health == 0){
-            bulletPlayer.points += 10;
+          if(bulletPlayer !== undefined){
+            bullet.hit = true;
+            bulletPlayer.points++;
+            if(player.health == 0){
+              bulletPlayer.points += 10;
+            }
           }
         }
-        if(HIGH_SCORES[0][1] < bulletPlayer.points){
-          if(HIGH_SCORES[0][0] == bulletPlayer.name){
+        if(bulletPlayer !== undefined){
+          if(HIGH_SCORES[0][1] < bulletPlayer.points){
+            if(HIGH_SCORES[0][0] == bulletPlayer.name){
+              HIGH_SCORES[0][0] = bulletPlayer.name;
+              HIGH_SCORES[0][1] = bulletPlayer.points;
+            } else {
+            HIGH_SCORES[2][0] = HIGH_SCORES[1][0];
+            HIGH_SCORES[2][1] = HIGH_SCORES[1][1];
+            HIGH_SCORES[1][0] = HIGH_SCORES[0][0];
+            HIGH_SCORES[1][1] = HIGH_SCORES[0][1];
             HIGH_SCORES[0][0] = bulletPlayer.name;
             HIGH_SCORES[0][1] = bulletPlayer.points;
-          } else {
-          HIGH_SCORES[2][0] = HIGH_SCORES[1][0];
-          HIGH_SCORES[2][1] = HIGH_SCORES[1][1];
-          HIGH_SCORES[1][0] = HIGH_SCORES[0][0];
-          HIGH_SCORES[1][1] = HIGH_SCORES[0][1];
-          HIGH_SCORES[0][0] = bulletPlayer.name;
-          HIGH_SCORES[0][1] = bulletPlayer.points;
-          }
-        } else if((HIGH_SCORES[1][1] < bulletPlayer.points) && !(HIGH_SCORES[0][0] == bulletPlayer.name)){
-          if(HIGH_SCORES[1][0] == bulletPlayer.name){
+            }
+          } else if((HIGH_SCORES[1][1] < bulletPlayer.points) && !(HIGH_SCORES[0][0] == bulletPlayer.name)){
+            if(HIGH_SCORES[1][0] == bulletPlayer.name){
+              HIGH_SCORES[1][0] = bulletPlayer.name;
+              HIGH_SCORES[1][1] = bulletPlayer.points;
+            } else {
+            HIGH_SCORES[2][0] = HIGH_SCORES[1][0];
+            HIGH_SCORES[2][1] = HIGH_SCORES[1][1];
             HIGH_SCORES[1][0] = bulletPlayer.name;
             HIGH_SCORES[1][1] = bulletPlayer.points;
-          } else {
-          HIGH_SCORES[2][0] = HIGH_SCORES[1][0];
-          HIGH_SCORES[2][1] = HIGH_SCORES[1][1];
-          HIGH_SCORES[1][0] = bulletPlayer.name;
-          HIGH_SCORES[1][1] = bulletPlayer.points;
+            }
+          } else if((HIGH_SCORES[2][1] < bulletPlayer.points) && ((HIGH_SCORES[1][0] !== bulletPlayer.name) && (HIGH_SCORES[0][0] !== bulletPlayer.name))){
+            HIGH_SCORES[2][0] = bulletPlayer.name;
+            HIGH_SCORES[2][1] = bulletPlayer.points;
           }
-        } else if((HIGH_SCORES[2][1] < bulletPlayer.points) && ((HIGH_SCORES[1][0] !== bulletPlayer.name) && (HIGH_SCORES[0][0] !== bulletPlayer.name))){
-          HIGH_SCORES[2][0] = bulletPlayer.name;
-          HIGH_SCORES[2][1] = bulletPlayer.points;
         }
       }
     }
@@ -169,36 +195,23 @@ io.sockets.on('connection', function(socket){
     delete SOCKET_LIST[socket.id];
     delete PLAYER_LIST[socket.id];
   })
-  socket.on('move', function(data){
+  socket.on('input', function(data){
     player = PLAYER_LIST[socket.id];
-    if(data.direction === 'thrust'){
+    if(data.command === 'thrust'){
       player.thrusting = data.state;
-    } else if(data.direction === 'rotate-l'){
+    } else if(data.command === 'rotate-l'){
       player.rotateDir = -1;
       player.turning = data.state;
-    } else if(data.direction === 'rotate-r'){
+    } else if(data.command === 'rotate-r'){
       player.rotateDir = 1;
       player.turning = data.state;
+    } else if(data.command === 'fire'){
+      player.firing = data.state;
+      if (data.state === false){
+        player.fired = false;
+      }
     }
   });
-  socket.on('fire', function(data){
-    var bulletDirection = [0,0]
-    var p_vel = PLAYER_LIST[socket.id].velocity;
-
-    if (p_vel[0] !== 0 || p_vel[1] !== 0){
-      id = Math.random();
-      if(p_vel[0] !== 0){
-        bulletDirection[0] = p_vel[0];
-        //(p_vel[0] > 0) ? bulletDirection[0] = 1 : bulletDirection[0] = -1;
-      }
-      if(p_vel[1] !== 0){
-        bulletDirection[1] = p_vel[1];
-        //(p_vel[1] > 0) ? bulletDirection[1] = 1 : bulletDirection[1] = -1;
-      }
-      var bullet = Bullet(socket.id, bulletDirection);
-      BULLET_LIST[id] = bullet;
-    }
-  })
 
 });
 

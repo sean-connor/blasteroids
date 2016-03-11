@@ -5,7 +5,8 @@ var KEY_COMMANDS = {
   37: "rotate-l",
   65: "rotate-l",
   39: "rotate-r",
-  68: "rotate-r"
+  68: "rotate-r",
+  32: "fire"
 }
 var HIGH_SCORES=[];
 var socketId;
@@ -36,7 +37,6 @@ $(document).ready(function() {
         socket.emit("playerjoin", {id: socketId, name: name})
         window.addEventListener("keyup", keyup);
         window.addEventListener("keydown", keydown);
-        window.addEventListener("keypress", keypress);
         active = true;
       }
     });
@@ -52,7 +52,7 @@ socket.on('newPosition', function(data){
     textY = data[i].y + 40;
     healthX = data[i].x + 10;
     ctx.beginPath()
-    ctx.arc(data[i].x, data[i].y, 15, 0, 2 * Math.PI, false);
+    ctx.arc(data[i].x, data[i].y, 10, 0, 2 * Math.PI, false);
     ctx.fillStyle = "rgba(200,50,50, 0.5)";;
     ctx.strokeStyle = "#f8f8ff";
     if(data[i].id == socketId){
@@ -94,16 +94,12 @@ socket.on('scores', function(data){
   if(HIGH_SCORES.length === 0){
     HIGH_SCORES = data
   }
-  var scoreY = 590;
-  var scoreX = 20;
-  for (var i = 0; i < data.length; i++) {
-    var pX = scoreX + +40;
-    ctxLead.font = "20px Georgia";
-    ctxLead.fillStyle = "#f8f8ff";
-    ctxLead.fillText(data[i][0], scoreX, scoreY);
-    ctxLead.fillText(data[i][1], pX, scoreY);
-    scoreX += 100;
-  }
+  first = data[0][0] + " " + data[0][1];
+  second = data[1][0] + " " + data[1][1];
+  third = data[2][0] + " " + data[2][1];
+  $("#first")[0].innerHTML = first;
+  $("#second")[0].innerHTML = second;
+  $("#third")[0].innerHTML = third;
 });
 var gameLoss = function(points){
   ctx.clearRect(0,0, 800,600);
@@ -115,17 +111,12 @@ var gameLoss = function(points){
   ctx.fillText(points, 370, 250);
   active = false;
 }
-function keypress(e){
-  e = e || window.event;
-  if(e.keyCode === 32){
-    socket.emit("fire", {})
-  }
-}
+
 function keydown(e){
   e = e || window.event;
-  socket.emit("move", {direction: KEY_COMMANDS[e.keyCode], state: true});
+  socket.emit("input", {command: KEY_COMMANDS[e.keyCode], state: true});
 }
 function keyup(e){
   e = e || window.event;
-  socket.emit("move", {direction: KEY_COMMANDS[e.keyCode], state: false});
+  socket.emit("input", {command: KEY_COMMANDS[e.keyCode], state: false});
 }
