@@ -11,6 +11,13 @@ body{
   height: 100%;
   width: 100%;
 }
+.tagline{
+  color: white;
+  position: fixed;
+  top : 0%;
+  right: 15%;
+  font-size: 30px;
+}
 .board{
   position: fixed;
   top: 12%;
@@ -40,12 +47,12 @@ h2{
   flex-flow: column;
   top: 5%;
   left: 5%;
-  width: 30%;
+  width: 20%;
   height: 50%;
   justify-content: space-between;
 }
 .namein{
-  top: 40%;
+  top: 30%;
   position: relative;
 }
 .namegroup{
